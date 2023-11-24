@@ -4,9 +4,13 @@ import com.embosoft.PicPay_Simplificado.DTO.UserDTO;
 import com.embosoft.PicPay_Simplificado.domain.user.User;
 import com.embosoft.PicPay_Simplificado.domain.user.UserType;
 import com.embosoft.PicPay_Simplificado.exceptions.BadRequestException;
+import com.embosoft.PicPay_Simplificado.exceptions.NotFoundException;
 import com.embosoft.PicPay_Simplificado.repositories.UserRepository;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
@@ -16,11 +20,11 @@ import java.util.UUID;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
-
 @Service
+@Slf4j
+@Setter(onMethod = @__(@Autowired))
 public class UserService {
 
-    @Autowired
     private UserRepository repository;
 
     public void validateTransaction(User sender, BigDecimal amount) {
@@ -34,9 +38,10 @@ public class UserService {
     }
 
     public User findUserById(UUID id) {
-        return this.repository.findUserById(id).orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Usuário não encontrado"));
+        return this.repository.findUserById(id).orElseThrow(() -> new NotFoundException("Usuário não encontrado"));
     }
 
+    @Transactional
     public User createUser(UserDTO userDto) {
 
         if (this.repository.findUserByDocument(userDto.document()).isPresent()) {
